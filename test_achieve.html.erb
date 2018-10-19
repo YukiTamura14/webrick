@@ -1,0 +1,41 @@
+
+<html>
+  <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>webrick課題</h1>
+　　<p>自家消費以外</p>
+    <% require 'pg' %>
+
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+    
+    <% result = connection.exec("select weight, give_for from crops where not (give_for = '自家消費');") %>
+    <% data = [] %>
+
+    <% result.each do |record| %>
+      <%  data << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+    <form action='indicate.cgi' method='POST'>
+      下記のボタンを押すと、自家消費以外のゴーヤの情報を取得します。<br><br>
+      <input type="text" name="indicate" value=<%= data.join('"') %>>
+      <input type="submit" name="送信" >
+    </form>
+ 
+    <% result = connection.exec("select quality, weight, give_for from crops where quality = false;") %>
+    <% data = [] %>
+    
+    <% result.each do |record| %>
+      <%  data << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+    <form action='goya.cgi' method='POST'>
+       下記のボタンを押すと、品質の悪かったゴーヤの情報を取得します。<br><br>
+       <!-- type="hidden"はデータを隠して保持しておくための記述 -->
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goya" value=<%= data.join('"') %>>
+      <input type="submit" name="送信" >
+    </form>
+  </body>
+</html>
